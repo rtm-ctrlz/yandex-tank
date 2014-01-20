@@ -192,6 +192,7 @@ class StreamConfig:
         self.instances = None
         self.ipv6 = None
         self.ssl = None
+        self.ssl_version = None
         self.address = None
         self.port = None
         self.tank_type = None
@@ -212,7 +213,7 @@ class StreamConfig:
 
     @staticmethod
     def get_available_options():
-        opts = ["ssl", "tank_type", 'gatling_ip',
+        opts = ["ssl", "ssl_version", "tank_type", 'gatling_ip',
                 "method_prefix", "source_log_prefix"]
         opts += ["phantom_http_line", "phantom_http_field_num",
                  "phantom_http_field", "phantom_http_entity"]
@@ -224,6 +225,7 @@ class StreamConfig:
         ''' reads config '''
         # multi-options
         self.ssl = int(self.get_option("ssl", '0'))
+        self.ssl_version = int(self.get_option("ssl_version", '0'))
         self.tank_type = self.get_option("tank_type", 'http')
         # TODO: refactor. Maybe we should decide how to interact with StepperWrapper here.
         self.instances = int(
@@ -258,8 +260,9 @@ class StreamConfig:
 
         kwargs = {}
         kwargs['sequence_no'] = self.sequence_no
-        kwargs[
-            'ssl_transport'] = "transport_t ssl_transport = transport_ssl_t { timeout = 1s }\n transport = ssl_transport" if self.ssl else ""
+        kwargs['ssl_transport'] = "transport_t ssl_transport = transport_ssl_t { timeout = 1s " + \
+            ( "\n ssl_vesion = %d\n" % self.ssl_version if self.ssl_version ) + \
+            "}\n transport = ssl_transport" if self.ssl else ""
         kwargs['method_stream'] = self.method_prefix + \
             "_ipv6_t" if self.ipv6 else self.method_prefix + "_ipv4_t"
         kwargs['phout'] = self.phout_file
